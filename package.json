@@ -10,8 +10,13 @@
   },
   "dependencies": {
     "next": "16.2.4",
+    "query": "^0.2.0",
+    "query-string": "^9.3.1",
     "react": "19.2.4",
+    "react-chartjs-2": "^5.3.1",
+    "react-countup": "^6.5.3",
     "react-dom": "19.2.4",
+    "string": "^3.3.3",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
