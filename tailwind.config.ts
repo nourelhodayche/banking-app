@@ -22,7 +22,13 @@ const config = {
     extend: {
       colors: {
         fill: {
-          1: "rgba(255, 255, 255, 0.10)",
+          border: "#EAECF0",        // ← ajoute ça
+    ring: "#D0D5DD",          // ← ajoute ça
+    background: "#FFFFFF",    // ← ajoute ça
+    foreground: "#101828",    // ← ajoute ça
+    fill: {
+      1: "rgba(255, 255, 255, 0.10)",
+    },
         },
         bankGradient: "#0179FE",
         indigo: {
