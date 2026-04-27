@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 //polices Google (Inter + IBM Plex Serif)
-import {Inter, IBM_Plex_Serif} from "next/font/google";
+import {Inter, IBM_Plex_Serif, Geist } from "next/font/google";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+
 
 //configurer les fonts et tu les attaches à des variables CSS
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter'});
@@ -28,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en">
+      lang="en" className={cn("font-sans", geist.variable)}>
   <body className={'${inter.variable} ${ibmPlexSerif.variable} ${ibmPlexSerif.variable}'}>{children}</body>
     </html>
   );
