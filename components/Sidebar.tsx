@@ -5,11 +5,11 @@ import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-// import Footer from './Footer'
-// import PlaidLink from './PlaidLink'
+import Footer from './Footer'
+import PlaidLink from './PlaidLink'
 
 const Sidebar = ({ user }: SiderbarProps) => {
-  const pathname = usePathname(); // hook de next.js
+  const pathname = usePathname();
 
   return (
     <section className="sidebar">
@@ -42,20 +42,17 @@ const Sidebar = ({ user }: SiderbarProps) => {
                   })}
                 />
               </div>
-              <p className={cn("sidebar-label", { "!text-white": isActive })}> 
-                {/* cn property refer to className it allows to conditionally apply classes */}
+              <p className={cn("sidebar-label", { "!text-white": isActive })}>
                 {item.label}
               </p>
             </Link>
           )
         })}
         
-        USER
-        {/* <PlaidLink user={user} /> */}
+        <PlaidLink user={user} />
       </nav>
 
-      USER
-      {/* <Footer user={user} /> */}
+      <Footer user={user} />
     </section>
   )
 }

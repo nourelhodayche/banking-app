@@ -1,8 +1,7 @@
 import type { Config } from "tailwindcss";
-import tailwindcssAnimate from "tailwindcss-animate";
 
 const config = {
-  darkMode:"class",
+  darkMode: ["class"],
   content: [
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
@@ -22,13 +21,7 @@ const config = {
     extend: {
       colors: {
         fill: {
-          border: "#EAECF0",        // ← ajoute ça
-    ring: "#D0D5DD",          // ← ajoute ça
-    background: "#FFFFFF",    // ← ajoute ça
-    foreground: "#101828",    // ← ajoute ça
-    fill: {
-      1: "rgba(255, 255, 255, 0.10)",
-    },
+          1: "rgba(255, 255, 255, 0.10)",
         },
         bankGradient: "#0179FE",
         indigo: {
@@ -110,7 +103,7 @@ const config = {
       },
     },
   },
-plugins: [tailwindcssAnimate],
+  plugins: [require("tailwindcss-animate")],
 } satisfies Config;
 
 export default config;

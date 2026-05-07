@@ -1,38 +1,65 @@
-// from react-chartjs-2 on acopié le code
+"use client";
+import { useState } from "react";
 
-"use client"; // le code s'execute coté navigateur
+import { Button } from "./ui/button";
 
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
-import { Doughnut } from "react-chartjs-2";
+const Copy = ({ title }: { title: string }) => {
+  const [hasCopied, setHasCopied] = useState(false);
 
-ChartJS.register(ArcElement, Tooltip, Legend); //activer ces fonctionnalités dans Chart.js.
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(title);
+    setHasCopied(true);
 
-  const DoughnutChart = ({ accounts }: DoughnutChartProps) => {
-  const accountNames = accounts.map((a) => a.name);
-  const balances = accounts.map((a) => a.currentBalance)
+    setTimeout(() => {
+      setHasCopied(false);
+    }, 2000);
+  };
 
-  const data = {
-    datasets: [
-      {
-        label: 'Banks',
-        data: [1234, 4567, 1900], //balances,
-        backgroundColor: ['#0747b6', '#2265d8', '#2f91fa'] 
-      }
-    ],
-    labels: ["Bank 1", "Bank 2", "Bank 3"]
-  }
+  return (
+    <Button
+      data-state="closed"
+      className="mt-3 flex max-w-[320px] gap-4"
+      variant="secondary"
+      onClick={copyToClipboard}
+    >
+      <p className="line-clamp-1 w-full max-w-full text-xs font-medium text-black-2">
+        {title} test
+      </p>
 
-  return <Doughnut 
-    data={data} 
-    options={{
-      cutout: '60%', //circle size
-      plugins: {
-        legend: {
-          display: false
-        }
-      }
-    }}
-  />
-}
+      {!hasCopied ? (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          className="mr-2 size-4"
+        >
+          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
+          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
+        </svg>
+      ) : (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          className="mr-2 size-4"
+        >
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      )}
+    </Button>
+  );
+};
 
-export default DoughnutChart
+export default Copy;
