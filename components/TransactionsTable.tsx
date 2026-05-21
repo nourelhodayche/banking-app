@@ -70,7 +70,7 @@ const TransactionsTable = ({ transactions }: TransactionTableProps) => {
               </TableCell>
 
               <TableCell className="min-w-32 pl-2 pr-10">
-                {formatDateTime(new Date(t.date)).dateTime}
+                {new Date(t.date).toLocaleString()}
               </TableCell>
 
               <TableCell className="pl-2 pr-10 capitalize min-w-24">

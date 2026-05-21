@@ -10,7 +10,6 @@ declare type SearchParamProps = {
 declare type SignUpParams = {
   firstName: string;
   lastName: string;
-  address1: string;
   city: string;
   state: string;
   postalCode: string;
@@ -34,7 +33,6 @@ declare type User = {
   firstName: string;
   lastName: string;
   name: string;
-  address1: string;
   city: string;
   state: string;
   postalCode: string;
@@ -90,6 +88,7 @@ declare type Bank = {
   fundingSourceUrl: string;
   userId: string;
   shareableId: string;
+  currentBalance: number;
 };
 
 declare type AccountTypes =
@@ -129,7 +128,6 @@ declare type NewDwollaCustomerParams = {
   lastName: string;
   email: string;
   type: string;
-  address1: string;
   city: string;
   state: string;
   postalCode: string;
@@ -313,8 +311,9 @@ declare interface createBankAccountProps {
   userId: string;
   accountId: string;
   bankId: string;
-  fundingSourceUrl: string;
   shareableId: string;
+  currentBalance: number;
+
 }
 
 declare interface getBanksProps {
@@ -328,3 +327,10 @@ declare interface getBankProps {
 declare interface getBankByAccountIdProps {
   accountId: string;
 }
+
+type AppwriteUser = {
+  $id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+};

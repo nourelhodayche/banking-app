@@ -1,25 +1,35 @@
 "use server";
 
-import {
-  ACHClass,
-  CountryCode,
-  TransferAuthorizationCreateRequest,
-  TransferCreateRequest,
-  TransferNetwork,
-  TransferType,
-} from "plaid";
+import {CountryCode} from "plaid";
 
 import { plaidClient } from "../plaid";
 import { parseStringify } from "../utils";
 
 import { getTransactionsByBankId } from "./transaction.actions";
 import { getBanks, getBank } from "./user.actions";
+import { isMockUserId } from "../mock-auth";
 
 // Get multiple bank accounts
 export const getAccounts = async ({ userId }: getAccountsProps) => {
   try {
+    if (isMockUserId(userId)) {
+      return parseStringify({
+        data: [],
+        totalBanks: 0,
+        totalCurrentBalance: 0,
+      });
+    }
+
     // get banks from db
     const banks = await getBanks({ userId });
+
+    if (!banks?.length) {
+      return parseStringify({
+        data: [],
+        totalBanks: 0,
+        totalCurrentBalance: 0,
+      });
+    }
 
     const accounts = await Promise.all(
       banks?.map(async (bank: Bank) => {
@@ -36,8 +46,11 @@ export const getAccounts = async ({ userId }: getAccountsProps) => {
 
         const account = {
           id: accountData.account_id,
-          availableBalance: accountData.balances.available!,
-          currentBalance: accountData.balances.current!,
+          
+          //using appwrite balance
+          availableBalance: Number(bank.currentBalance ?? 0),
+currentBalance: Number(bank.currentBalance ?? 0),
+
           institutionId: institution.institution_id,
           name: accountData.name,
           officialName: accountData.official_name,
@@ -45,7 +58,7 @@ export const getAccounts = async ({ userId }: getAccountsProps) => {
           type: accountData.type as string,
           subtype: accountData.subtype! as string,
           appwriteItemId: bank.$id,
-          sharaebleId: bank.shareableId,
+          shareableId: bank.shareableId,
         };
 
         return account;
@@ -83,10 +96,8 @@ export const getAccount = async ({ appwriteItemId }: getAccountProps) => {
     const transferTransactions = transferTransactionsData.documents.map(
       (transferData: Transaction) => ({
         id: transferData.$id,
-        name: transferData.name!,
-        amount: transferData.amount!,
-        date: transferData.$createdAt,
-        paymentChannel: transferData.channel,
+        name: transferData.category || "Transfer",        
+        date: new Date(transferData.$createdAt).toISOString(),        paymentChannel: transferData.channel,
         category: transferData.category,
         type: transferData.senderBankId === bank.$id ? "debit" : "credit",
       })
@@ -103,8 +114,8 @@ export const getAccount = async ({ appwriteItemId }: getAccountProps) => {
 
     const account = {
       id: accountData.account_id,
-      availableBalance: accountData.balances.available!,
-      currentBalance: accountData.balances.current!,
+      availableBalance: Number(bank.currentBalance ?? 0),
+currentBalance: Number(bank.currentBalance ?? 0),
       institutionId: institution.institution_id,
       name: accountData.name,
       officialName: accountData.official_name,
@@ -162,18 +173,21 @@ export const getTransactions = async ({
 
       const data = response.data;
 
-      transactions = response.data.added.map((transaction) => ({
-        id: transaction.transaction_id,
-        name: transaction.name,
-        paymentChannel: transaction.payment_channel,
-        type: transaction.payment_channel,
-        accountId: transaction.account_id,
-        amount: transaction.amount,
-        pending: transaction.pending,
-        category: transaction.category ? transaction.category[0] : "",
-        date: transaction.date,
-        image: transaction.logo_url,
-      }));
+      const added = response.data.added ?? [];
+
+transactions.push(
+  ...added.map((transaction) => ({
+    id: transaction.transaction_id,
+    name: transaction.name,
+    paymentChannel: transaction.payment_channel,
+    type: transaction.payment_channel,
+    accountId: transaction.account_id,
+    amount: transaction.amount,
+    pending: transaction.pending,
+    category: transaction.category ? transaction.category[0] : "",
+    date: new Date(transaction.date).toISOString(),    image: transaction.logo_url,
+  }))
+);
 
       hasMore = data.has_more;
     }

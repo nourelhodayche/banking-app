@@ -1,65 +1,37 @@
 "use client";
-import { useState } from "react";
 
-import { Button } from "./ui/button";
+const COLORS = ["#0179FE", "#4893FF", "#6172F3", "#3538CD", "#039855"];
 
-const Copy = ({ title }: { title: string }) => {
-  const [hasCopied, setHasCopied] = useState(false);
+const DoughnutChart = ({ accounts }: DoughnutChartProps) => {
+  if (!accounts?.length) {
+    return (
+      <div
+        className="flex size-[100px] items-center justify-center rounded-full border border-dashed border-gray-200 text-center text-xs text-gray-500 sm:size-[120px]"
+        aria-hidden
+      >
+        —
+      </div>
+    );
+  }
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(title);
-    setHasCopied(true);
-
-    setTimeout(() => {
-      setHasCopied(false);
-    }, 2000);
-  };
+  const total =
+    accounts.reduce((sum, a) => sum + (a.currentBalance ?? 0), 0) || 1;
+  let acc = 0;
+  const segments = accounts.map((a, i) => {
+    const start = (acc / total) * 360;
+    acc += a.currentBalance ?? 0;
+    const end = (acc / total) * 360;
+    const color = COLORS[i % COLORS.length];
+    return `${color} ${start}deg ${end}deg`;
+  });
 
   return (
-    <Button
-      data-state="closed"
-      className="mt-3 flex max-w-[320px] gap-4"
-      variant="secondary"
-      onClick={copyToClipboard}
-    >
-      <p className="line-clamp-1 w-full max-w-full text-xs font-medium text-black-2">
-        {title} test
-      </p>
-
-      {!hasCopied ? (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          className="mr-2 size-4"
-        >
-          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect>
-          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path>
-        </svg>
-      ) : (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          className="mr-2 size-4"
-        >
-          <polyline points="20 6 9 17 4 12"></polyline>
-        </svg>
-      )}
-    </Button>
+    <div
+      className="size-[100px] shrink-0 rounded-full sm:size-[120px]"
+      style={{ background: `conic-gradient(${segments.join(", ")})` }}
+      title="Balance distribution"
+    />
   );
 };
 
-export default Copy;
+export default DoughnutChart;

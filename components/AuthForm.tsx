@@ -29,6 +29,7 @@ const AuthForm = ({ type }: { type: string }) => {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
 
   const formSchema = authFormSchema(type);
 
@@ -36,14 +37,22 @@ const AuthForm = ({ type }: { type: string }) => {
     const form = useForm<z.infer<typeof formSchema>>({
       resolver: zodResolver(formSchema),
       defaultValues: {
-        email: "",
-        password: ''
+        firstName: "",
+  lastName: "",
+  city: "",
+  state: "",
+  postalCode: "",
+  dateOfBirth: "",
+  ssn: "",
+  email: "",
+  password: "",
       },
     })
    
     // 2. Define a submit handler.
     const onSubmit = async (data: z.infer<typeof formSchema>) => {
       setIsLoading(true);
+      setFormError(null);
 
       try {
         // Sign up with Appwrite & create plaid token
@@ -52,7 +61,6 @@ const AuthForm = ({ type }: { type: string }) => {
           const userData = {
             firstName: data.firstName!,
             lastName: data.lastName!,
-            address1: data.address1!,
             city: data.city!,
             state: data.state!,
             postalCode: data.postalCode!,
@@ -64,7 +72,12 @@ const AuthForm = ({ type }: { type: string }) => {
 
           const newUser = await signUp(userData);
 
-          setUser(newUser);
+          if (!newUser) {
+            setFormError("Sign up failed. Check your details and try again.");
+            return;
+          }
+
+          router.push("/");
         }
 
         if(type === 'sign-in') {
@@ -73,10 +86,16 @@ const AuthForm = ({ type }: { type: string }) => {
             password: data.password,
           })
 
-          if(response) router.push('/')
+          if(!response) {
+            setFormError("Sign in failed. Check your email/password and try again.");
+            return;
+          }
+
+          router.push('/')
         }
       } catch (error) {
         console.log(error);
+        setFormError("Something went wrong. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -92,7 +111,7 @@ const AuthForm = ({ type }: { type: string }) => {
               height={34}
               alt="Horizon logo"
             />
-            <h1 className="text-26 font-ibm-plex-serif font-bold text-black-1">Horizon</h1>
+            <h1 className="text-26 font-ibm-plex-serif font-bold text-black-1">BankTracker</h1>
           </Link>
 
           <div className="flex flex-col gap-1 md:gap-3">
@@ -119,14 +138,19 @@ const AuthForm = ({ type }: { type: string }) => {
       ): (
         <>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                return form.handleSubmit(onSubmit)(e);
+              }}
+              className="space-y-8"
+            >
               {type === 'sign-up' && (
                 <>
                   <div className="flex gap-4">
                     <CustomInput control={form.control} name='firstName' label="First Name" placeholder='Enter your first name' />
                     <CustomInput control={form.control} name='lastName' label="Last Name" placeholder='Enter your first name' />
                   </div>
-                  <CustomInput control={form.control} name='address1' label="Address" placeholder='Enter your specific address' />
                   <CustomInput control={form.control} name='city' label="City" placeholder='Enter your city' />
                   <div className="flex gap-4">
                     <CustomInput control={form.control} name='state' label="State" placeholder='Example: NY' />
@@ -154,6 +178,10 @@ const AuthForm = ({ type }: { type: string }) => {
                     ? 'Sign In' : 'Sign Up'}
                 </Button>
               </div>
+
+              {formError ? (
+                <p className="text-sm font-medium text-red-600">{formError}</p>
+              ) : null}
             </form>
           </Form>
 
