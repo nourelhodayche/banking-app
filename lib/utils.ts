@@ -192,10 +192,10 @@ export function decryptId(id: string) {
 
 export const getTransactionStatus = (date: Date) => {
   const today = new Date();
-  const twoDaysAgo = new Date(today);
-  twoDaysAgo.setDate(today.getDate() - 2);
+  const oneDayAgo = new Date(today);
+  oneDayAgo.setDate(today.getDate() - 1);
 
-  return date > twoDaysAgo ? "Processing" : "Success";
+  return date > oneDayAgo ? "Processing" : "Success";
 };
 
 export const authFormSchema = (type: string) => z.object({

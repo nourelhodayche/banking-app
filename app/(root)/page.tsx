@@ -51,9 +51,20 @@ const Home = async ({ searchParams: { id, page } }: SearchParamProps) => {
   // =====================
   // TRANSACTIONS
   // =====================
-  const transactions = await getTransactionsByBankId({
+  const transactionsData = await getTransactionsByBankId({
     bankId: bank?.$id,
   });
+
+  // ✅ FIX: les documents bruts d'Appwrite utilisent $createdAt et
+  // channel, alors que les composants attendent date et paymentChannel.
+  // On normalise ici pour éviter "Invalid Date" et la colonne Channel vide.
+  const transactions = {
+    documents: (transactionsData?.documents || []).map((t: any) => ({
+      ...t,
+      date: t.$createdAt,
+      paymentChannel: t.channel || "Online",
+    })),
+  };
 
   return (
     <section className="home">

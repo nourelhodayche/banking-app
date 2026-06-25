@@ -11,16 +11,16 @@ export const Pagination = ({ page, totalPages }: PaginationProps) => {
   const searchParams = useSearchParams()!;
 
   const handleNavigation = (type: "prev" | "next") => {
-    const pageNumber = type === "prev" ? page - 1 : page + 1;
+  const pageNumber = type === "prev" ? page - 1 : page + 1;
 
-    const newUrl = formUrlQuery({
-      params: searchParams.toString(),
-      key: "page",
-      value: pageNumber.toString(),
-    });
+  const newUrl = formUrlQuery({
+    params: searchParams.toString(),
+    key: "page",
+    value: pageNumber.toString(),
+  });
 
-    router.push(newUrl, { scroll: false });
-  };
+  router.push(newUrl, { scroll: false });
+};
 
   return (
     <div className="flex justify-between gap-3">

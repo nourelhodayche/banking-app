@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -37,9 +37,15 @@ const formSchema = z.object({
   senderBank: z.string().min(1, "Please select a valid bank account"),
 });
 
+type Notification = {
+  type: "success" | "error";
+  message: string;
+};
+
 const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [notification, setNotification] = useState<Notification | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -51,8 +57,13 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
     },
   });
 
+  const showNotification = (type: "success" | "error", message: string) => {
+    setNotification({ type, message });
+  };
+
   const submit = async (data: z.infer<typeof formSchema>) => {
     setIsLoading(true);
+    setNotification(null);
 
     try {
       // sender bank
@@ -68,40 +79,44 @@ const PaymentTransferForm = ({ accounts }: PaymentTransferFormProps) => {
       const receiverBank = await getBankByEmail(data.email);
 
       if (!receiverBank) {
-        alert("Receiver account not found");
+        showNotification(
+          "error",
+          "Receiver account not found. Please check the email and try again."
+        );
         setIsLoading(false);
         return;
       }
 
-const amount = Number(data.amount);
+      const amount = Number(data.amount);
 
-if (isNaN(amount) || amount <= 0) {
-  alert("Invalid amount");
-  setIsLoading(false);
-  return;
-}
       if (isNaN(amount) || amount <= 0) {
-        alert("Invalid amount");
+        showNotification("error", "Please enter a valid amount.");
         setIsLoading(false);
         return;
       }
 
-      // 🚀 ONLY ONE CALL NOW
       await transferFunds({
-  senderBankId: senderBank.$id,
-  receiverShareableId: receiverBank.shareableId,
-  amount,
-  name: data.name,
-});
+        senderBankId: senderBank.$id,
+        receiverShareableId: receiverBank.shareableId,
+        amount,
+        name: data.name,
+      });
 
-form.reset();
+      form.reset();
+      showNotification("success", "Transfer completed successfully!");
 
-router.refresh(); //force update des données
-router.push("/");
-
+      // Laisse le temps à l'utilisateur de voir la notif avant de
+      // rediriger / rafraîchir les données de la page d'accueil.
+      setTimeout(() => {
+        router.refresh();
+        router.push("/");
+      }, 1500);
     } catch (error: any) {
       console.error("Transfer failed:", error);
-      alert(error.message || "Transfer failed");
+      showNotification(
+        "error",
+        error?.message || "Transfer failed. Please try again."
+      );
     }
 
     setIsLoading(false);
@@ -109,6 +124,23 @@ router.push("/");
 
   return (
     <Form {...form}>
+      {notification && (
+        <div
+          className={`mb-4 flex items-center gap-2 rounded-md border px-4 py-3 text-14 font-medium ${
+            notification.type === "success"
+              ? "border-[#12B76A] bg-[#ECFDF3] text-[#027A48]"
+              : "border-red-300 bg-red-50 text-red-700"
+          }`}
+        >
+          {notification.type === "success" ? (
+            <CheckCircle2 size={18} className="shrink-0" />
+          ) : (
+            <XCircle size={18} className="shrink-0" />
+          )}
+          <span>{notification.message}</span>
+        </div>
+      )}
+
       <form onSubmit={form.handleSubmit(submit)} className="flex flex-col">
 
         <FormField

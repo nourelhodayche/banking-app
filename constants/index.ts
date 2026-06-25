@@ -76,6 +76,38 @@ export const topCategoryStyles = {
     },
     icon: "/icons/coins.svg",
   },
+
+  // ✅ AJOUTÉ : styles dédiés pour debit / credit
+  // (avant, ces 2 catégories n'existaient pas ici et retombaient
+  // sur "default" — d'où l'icône "sac de courses" et la couleur
+  // rose qui n'avaient pas de sens pour debit/credit).
+  debit: {
+    bg: "bg-red-50",
+    circleBg: "bg-red-100",
+    text: {
+      main: "text-red-900",
+      count: "text-red-700",
+    },
+    progress: {
+      bg: "bg-red-100",
+      indicator: "bg-red-700",
+    },
+    icon: "/icons/credit-card.svg",
+  },
+  credit: {
+    bg: "bg-success-25",
+    circleBg: "bg-success-100",
+    text: {
+      main: "text-success-900",
+      count: "text-success-700",
+    },
+    progress: {
+      bg: "bg-success-100",
+      indicator: "bg-success-700",
+    },
+    icon: "/icons/coins.svg",
+  },
+
   default: {
     bg: "bg-pink-25",
     circleBg: "bg-pink-100",
@@ -134,6 +166,29 @@ export const transactionCategoryStyles = {
     textColor: "text-blue-700",
     chipBackgroundColor: "bg-[#ECFDF3]",
   },
+
+  // ✅ AJOUTÉ : couleurs dédiées pour debit / credit / Other
+  // (avant, ces catégories n'existaient pas ici et retombaient
+  // toutes sur "default", qui est bleu — d'où la confusion).
+  debit: {
+    borderColor: "border-red-600",
+    backgroundColor: "bg-red-600",
+    textColor: "text-red-700",
+    chipBackgroundColor: "bg-inherit",
+  },
+  credit: {
+    borderColor: "border-green-600",
+    backgroundColor: "bg-green-600",
+    textColor: "text-green-700",
+    chipBackgroundColor: "bg-inherit",
+  },
+  Other: {
+    borderColor: "border-gray-400",
+    backgroundColor: "bg-gray-400",
+    textColor: "text-gray-600",
+    chipBackgroundColor: "bg-gray-100",
+  },
+
   default: {
     borderColor: "",
     backgroundColor: "bg-blue-500",

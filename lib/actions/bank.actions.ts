@@ -31,7 +31,7 @@ export const getAccounts = async ({ userId }: getAccountsProps) => {
       });
     }
 
-    const accounts = await Promise.all(
+    const accountResults = await Promise.allSettled(
       banks?.map(async (bank: Bank) => {
         // get each account info from plaid
         const accountsResponse = await plaidClient.accountsGet({
@@ -46,10 +46,10 @@ export const getAccounts = async ({ userId }: getAccountsProps) => {
 
         const account = {
           id: accountData.account_id,
-          
+
           //using appwrite balance
           availableBalance: Number(bank.currentBalance ?? 0),
-currentBalance: Number(bank.currentBalance ?? 0),
+          currentBalance: Number(bank.currentBalance ?? 0),
 
           institutionId: institution.institution_id,
           name: accountData.name,
@@ -64,6 +64,25 @@ currentBalance: Number(bank.currentBalance ?? 0),
         return account;
       })
     );
+
+    // Ne garde que les comptes qui ont réussi. Si un token Plaid est
+    // expiré (ITEM_LOGIN_REQUIRED) ou invalide, on log l'erreur et on
+    // ignore cette banque au lieu de faire planter toute la page.
+    const accounts = accountResults
+      .filter(
+        (result): result is PromiseFulfilledResult<any> =>
+          result.status === "fulfilled" && result.value != null
+      )
+      .map((result) => result.value);
+
+    accountResults.forEach((result, index) => {
+      if (result.status === "rejected") {
+        console.error(
+          `Bank ${banks[index]?.$id} ignorée (échec Plaid):`,
+          result.reason?.response?.data?.error_code ?? result.reason
+        );
+      }
+    });
 
     const totalBanks = accounts.length;
     const totalCurrentBalance = accounts.reduce((total, account) => {
@@ -93,15 +112,17 @@ export const getAccount = async ({ appwriteItemId }: getAccountProps) => {
       bankId: bank.$id,
     });
 
-    const transferTransactions = transferTransactionsData.documents.map(
-      (transferData: Transaction) => ({
-        id: transferData.$id,
-        name: transferData.category || "Transfer",        
-        date: new Date(transferData.$createdAt).toISOString(),        paymentChannel: transferData.channel,
-        category: transferData.category,
-        type: transferData.senderBankId === bank.$id ? "debit" : "credit",
-      })
-    );
+   const transferTransactions = transferTransactionsData.documents.map(
+  (transferData: Transaction) => ({
+    id: transferData.$id,
+    name: transferData.name || "Transfer",
+    amount: Number(transferData.amount || 0), // <-- IMPORTANT
+    date: new Date(transferData.$createdAt).toISOString(),
+    paymentChannel: transferData.channel || "Online",
+    category: transferData.category || "Transfer",
+    type: transferData.senderBankId === bank.$id ? "debit" : "credit",
+  })
+);
 
     // get institution info from plaid
     const institution = await getInstitution({
@@ -115,7 +136,7 @@ export const getAccount = async ({ appwriteItemId }: getAccountProps) => {
     const account = {
       id: accountData.account_id,
       availableBalance: Number(bank.currentBalance ?? 0),
-currentBalance: Number(bank.currentBalance ?? 0),
+      currentBalance: Number(bank.currentBalance ?? 0),
       institutionId: institution.institution_id,
       name: accountData.name,
       officialName: accountData.official_name,
@@ -184,8 +205,9 @@ transactions.push(
     accountId: transaction.account_id,
     amount: transaction.amount,
     pending: transaction.pending,
-    category: transaction.category ? transaction.category[0] : "",
-    date: new Date(transaction.date).toISOString(),    image: transaction.logo_url,
+    category: transaction.category && transaction.category[0] ? transaction.category[0] : "Other",
+    date: new Date(transaction.date).toISOString(),    
+    image: transaction.logo_url,
   }))
 );
 

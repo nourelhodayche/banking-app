@@ -4,12 +4,19 @@ import { sidebarLinks } from '@/constants'
 import { cn } from '@/lib/utils'
 import Image from 'next/image'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import Footer from './Footer'
 import PlaidLink from './PlaidLink'
 
 const Sidebar = ({ user }: SiderbarProps) => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  // ✅ FIX: on récupère le compte actuellement sélectionné (via ?id=...)
+  // pour le propager dans les liens du menu. Sans ça, cliquer sur
+  // "Transaction History" ou "Transfer Funds" perdait le compte choisi
+  // et retombait toujours sur le compte par défaut.
+  const currentAccountId = searchParams.get('id');
 
   return (
     <section className="sidebar">
@@ -28,8 +35,14 @@ const Sidebar = ({ user }: SiderbarProps) => {
         {sidebarLinks.map((item) => {
           const isActive = pathname === item.route || pathname.startsWith(`${item.route}/`)
 
+          // On garde le compte sélectionné dans l'URL des liens du menu
+          // (sauf pour My Banks, qui n'a pas besoin de ce param).
+          const href = currentAccountId
+            ? `${item.route}?id=${currentAccountId}`
+            : item.route;
+
           return (
-            <Link href={item.route} key={item.label}
+            <Link href={href} key={item.label}
               className={cn('sidebar-link', { 'bg-bank-gradient': isActive })}
             >
               <div className="relative size-6">

@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
   Select,
@@ -27,28 +27,38 @@ export const BankDropdown = ({
   // ✅ SAFE STATE
   const [selected, setSeclected] = useState(accounts?.[0] || null);
 
-  const handleBankChange = (id: string) => {
-
-    const account = accounts.find(
-      (account) => account.appwriteItemId === id
-    );
-
-    if (!account) return;
-
-    setSeclected(account);
-
-    const newUrl = formUrlQuery({
-      params: searchParams.toString(),
-      key: "id",
-      value: id,
-    });
-
-    router.push(newUrl, { scroll: false });
-
-    if (setValue) {
-      setValue("senderBank", id);
+  // ✅ FIX: initialise la valeur du formulaire dès le montage avec
+  // le compte pré-sélectionné par défaut. Sans ça, "senderBank"
+  // reste vide tant que l'utilisateur n'a pas changé manuellement
+  // la sélection, ce qui fait échouer la validation au submit.
+  useEffect(() => {
+    if (selected && setValue) {
+      setValue("senderBank", selected.appwriteItemId);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleBankChange = (id: string) => {
+  const account = accounts.find(
+    (account) => account.appwriteItemId === id
+  );
+
+  if (!account) return;
+
+  setSeclected(account);
+
+  const newUrl = formUrlQuery({
+    params: searchParams.toString(),
+    key: "id",
+    value: id,
+  });
+
+  router.push(newUrl, { scroll: false });
+
+  if (setValue) {
+    setValue("senderBank", id);
+  }
+};
 
   // ✅ NO BANKS SAFE UI
   if (!selected) {
